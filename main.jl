@@ -58,8 +58,8 @@ NWg[1] = -GB[1] - H[1]
 NW[1] = K[1]
 Vi[1], Vb[1], Vie[1], Vbe[1] = Mi[1]+Ei[1]+GBi[1], Eb[1]+GBb[1], Mi[1]+Ei[1]+GBi[1], Eb[1]+GBb[1]
 
-function run()
-    for t=2:N
+function run(time_range::UnitRange)
+    for t=time_range
         Wf[t] = (1-λw)*Wf[t-1] + λw*δ*(C[t-1]+I[t-1]+G[t-1])
         Wb[t] = (1-λw)*Wb[t-1] + λw*δ*(Pb[t-1]+rL*L[t-1]+rGB*GBb[t-1])
         Wg[t] = Wg0*exp(γ*t)
@@ -144,7 +144,7 @@ function run()
     end
 end
 
-run()
+run(2:N)
 
 plot(C, label="C")
 plot!(G, label="G")
