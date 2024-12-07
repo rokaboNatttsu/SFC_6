@@ -26,12 +26,12 @@ Eie, GBie, Ebe, GBbe = zeros(N), zeros(N), zeros(N), zeros(N)
 pe, Δpe = zeros(N), zeros(N)
 rL, rGB, uT = 0.01, 0.03, 0.7
 α1, α2, α3 = 0.95, 0.05, 0.02
-β1, β2, β3 = 1, 0.05, 1
+β1, β2, β3 = 1.5, 0.05, 1
 γ = 0.02
 δ = 0.7
 ϵ1, ϵ2, ϵ3, ϵ4 = 0.3, 0.1, 0.2, 0.2
 ζ = 0.3
-η1, η2, η3, η4, η5 = 5, 0.5, 0.3, 0.5, 0.01
+η1, η2, η3, η4, η5 = 5, 0.5, 0.3, 1, 0.01
 θ = 0.3
 λV, λw = 0.5, 0.5
 λ10, λ20, λ30 = 0.2, 0.4, 0.4
@@ -146,31 +146,115 @@ end
 
 run(2:N)
 
-plot(C, label="C")
-plot!(G, label="G")
-plot!(I, label="I")
+
+plot(C[end-50:end], label="C")
+plot!(Cw[end-50:end], label="Cw")
+plot!(Ci[end-50:end], label="Ci")
+plot!(G[end-50:end], label="G")
+plot!(I[end-50:end], label="I")
 savefig("figs/Y.png")
 
-plot(W, label="W")
-plot!(Wf, label="Wf")
-plot!(Wb, label="Wb")
-plot!(Wg, label="Wg")
+plot(Ti[end-50:end], label="Ti")
+plot!(Tiw[end-50:end], label="Tiw")
+plot!(Tii[end-50:end], label="Tii")
+savefig("figs/Ti.png")
+
+plot(Tf[end-50:end], label="Tf")
+plot!(Tfb[end-50:end], label="Tfb")
+plot!(Tff[end-50:end], label="Tff")
+savefig("figs/Tf.png")
+
+plot(Ti[end-50:end], label="Ti")
+plot!(Tv[end-50:end], label="Tv")
+plot!(Tf[end-50:end], label="Tf")
+savefig("figs/T.png")
+
+plot(W[end-50:end], label="W")
+plot!(Wf[end-50:end], label="Wf")
+plot!(Wb[end-50:end], label="Wb")
+plot!(Wg[end-50:end], label="Wg")
 savefig("figs/W.png")
 
-plot(Mw, label="Mw")
-plot!(Mi, label="Mi")
-plot!(Mf, label="Mf")
-plot!(M, label="M")
+plot(S[end-50:end], label="S")
+plot!(P[end-50:end], label="P")
+plot!(Pb[end-50:end], label="Pb")
+plot!(Pi[end-50:end], label="Pi")
+plot!(Pf[end-50:end], label="Pf")
+savefig("figs/P_and_S.png")
+
+plot(Mw[end-50:end], label="Mw")
+plot!(Mi[end-50:end], label="Mi")
+plot!(Mf[end-50:end], label="Mf")
+plot!(M[end-50:end], label="M")
 savefig("figs/M.png")
 
-plot(e, label="e")
-plot!(ei, label="ei")
-plot!(eb, label="eb")
+plot(ΔMw[end-50:end], label="ΔMw")
+plot!(ΔMi[end-50:end], label="ΔMi")
+plot!(ΔMf[end-50:end], label="ΔMf")
+plot!(ΔM[end-50:end], label="ΔM")
+savefig("figs/ΔM.png")
+
+plot(e[end-50:end], label="e")
+plot!(ei[end-50:end], label="ei")
+plot!(eb[end-50:end], label="eb")
 savefig("figs/e.png")
 
-plot(NWw, label="NWw")
-plot!(NWi, label="NWi")
-plot!(NWf, label="NWf")
-plot!(NWb, label="NWb")
-plot!(NWg, label="NWg")
+plot(Δe[end-50:end], label="Δe")
+plot!(Δei[end-50:end], label="Δei")
+plot!(Δeb[end-50:end], label="Δeb")
+savefig("figs/Δe.png")
+
+plot(pe[end-50:end], label="pe")
+savefig("figs/pe.png")
+
+plot(K[end-50:end], label="K")
+plot!(I[end-50:end], label="I")
+savefig("figs/K_and_I.png")
+
+plot(L[end-50:end], label="L")
+plot!(Lw[end-50:end], label="Lw")
+plot!(Lf[end-50:end], label="Lf")
+savefig("figs/L.png")
+
+plot(ΔL[end-50:end], label="ΔL")
+plot!(ΔLw[end-50:end], label="ΔLw")
+plot!(ΔLf[end-50:end], label="ΔLf")
+savefig("figs/ΔL.png")
+
+plot(H[end-50:end], label="H")
+plot!(Hw[end-50:end], label="Hw")
+plot!(Hb[end-50:end], label="Hb")
+savefig("figs/H.png")
+
+plot(ΔH[end-50:end], label="ΔH")
+plot!(ΔHw[end-50:end], label="ΔHw")
+plot!(ΔHb[end-50:end], label="ΔHb")
+savefig("figs/ΔH.png")
+
+plot(GB[end-50:end], label="GB")
+plot!(GBi[end-50:end], label="GBi")
+plot!(GBb[end-50:end], label="GBb")
+savefig("figs/GB.png")
+
+plot(ΔGB[end-50:end], label="ΔGB")
+plot!(ΔGBi[end-50:end], label="ΔGBi")
+plot!(ΔGBb[end-50:end], label="ΔGBb")
+savefig("figs/ΔGB.png")
+
+plot(NWw[end-50:end], label="NWw")
+plot!(NWi[end-50:end], label="NWi")
+plot!(NWf[end-50:end], label="NWf")
+plot!(NWb[end-50:end], label="NWb")
+plot!(NWg[end-50:end], label="NWg")
 savefig("figs/NW.png")
+
+plot(NLw[end-50:end], label="NLw")
+plot!(NLi[end-50:end], label="NLi")
+plot!(NLf[end-50:end], label="NLf")
+plot!(NLb[end-50:end], label="NLb")
+plot!(NLg[end-50:end], label="NLg")
+savefig("figs/NL.png")
+
+plot(((H+GB)./(C+G+I))[end-50:end], label="(H+GB)/Y")
+plot!(zeros(51), label=nothing)
+savefig("figs/Debt-to-GDP ratio.png")
