@@ -1,6 +1,6 @@
 using StatsPlots
 
-N=201
+N=1001
 
 Cw, Ci, C, Caw, Cai, Ca, I, G = zeros(N), zeros(N), zeros(N), zeros(N), zeros(N), zeros(N), zeros(N), zeros(N)
 W, Wf, Wb, Wg = zeros(N), zeros(N), zeros(N), zeros(N)
@@ -83,8 +83,9 @@ function run(time_range::UnitRange)
         Taf[t] = ϵ6*Kf[t-1]
         Ta[t] = Taw[t] + Tai[t] + Taf[t]
         P[t] = C[t]+Ca[t]+G[t]+I[t]-Wf[t]-Tv[t]-Tff[t]-Taf[t]-rL*Lf[t-1]
-        Pi[t] = (ζ1*(P[t]-I[t])+ζ2*(Mf[t-1]-Lf[t-1]))*Ei[t-1]/E[t-1]
-        Pb[t] = (ζ1*(P[t]-I[t])+ζ2*(Mf[t-1]-Lf[t-1]))*Eb[t-1]/E[t-1]
+        TD = ζ1*(P[t]-I[t])+ζ2*(Mf[t-1]-Lf[t-1])
+        Pi[t] = TD*Ei[t-1]/E[t-1]
+        Pb[t] = TD*Eb[t-1]/E[t-1]
         Pf[t] = P[t]-Pi[t]-Pb[t]
         IT[t] = θ1*Pb[t] + θ2*NLb[t-1]
         Tii[t] = ϵ4*(Pi[t]+IT[t]+rGB*GBi[t-1])
@@ -114,9 +115,9 @@ function run(time_range::UnitRange)
         L[t] = L[t-1] + ΔL[t]
         ΔMf[t] = NLf[t] + ΔLf[t]
         Mf[t] = Mf[t-1] + ΔMf[t]
-        Mi[t] = (λ10 + λ12*ζ*(P[t-1]-I[t-1])/E[t-1] + λ13*rGB)*Vie[t]
-        Eie[t] = (λ20 + λ22*ζ*(P[t-1]-I[t-1])/E[t-1] + λ23*rGB)*Vie[t]
-        GBie[t] = (λ30 + λ32*ζ*(P[t-1]-I[t-1])/E[t-1] + λ33*rGB)*Vie[t]
+        Mi[t] = (λ10 + λ12*TD/E[t-1] + λ13*rGB)*Vie[t]
+        Eie[t] = (λ20 + λ22*TD/E[t-1] + λ23*rGB)*Vie[t]
+        GBie[t] = (λ30 + λ32*TD/E[t-1] + λ33*rGB)*Vie[t]
         ΔMi[t] = Mi[t] - Mi[t-1]
         ΔM[t] = ΔMw[t] + ΔMi[t] + ΔMf[t]
         M[t] = M[t-1] + ΔM[t]
@@ -126,8 +127,8 @@ function run(time_range::UnitRange)
         H[t] = H[t-1] + ΔH[t]
         ΔGB[t] = -NLg[t] - ΔH[t]
         GB[t] = GB[t-1] + ΔGB[t]
-        Ebe[t] = (λ40 + λ41*ζ*(P[t-1]-I[t-1])/E[t-1] + λ42*rGB)*Vbe[t]
-        GBbe[t] = (λ50 + λ51*ζ*(P[t-1]-I[t-1])/E[t-1] + λ52*rGB)*Vbe[t]
+        Ebe[t] = (λ40 + λ41*TD/E[t-1] + λ42*rGB)*Vbe[t]
+        GBbe[t] = (λ50 + λ51*TD/E[t-1] + λ52*rGB)*Vbe[t]
         GBi[t] = GB[t]*GBie[t]/(GBie[t]+GBbe[t])
         GBb[t] = GB[t]*GBbe[t]/(GBie[t]+GBbe[t])
         ΔGBi[t] = GBi[t] - GBi[t-1]
@@ -235,7 +236,7 @@ function all_plot()
     plot!(ei[end-50:end], label="ei")
     plot!(eb[end-50:end], label="eb")
     plot!(zeros(51), label=nothing, color="Gray")
-    savefig("figs/e.png")
+    savefig("figs/small_e.png")
 
     plot(Δe[end-50:end], label="Δe")
     plot!(Δei[end-50:end], label="Δei")
@@ -257,6 +258,11 @@ function all_plot()
     plot!(Lw[end-50:end], label="Lw")
     plot!(Lf[end-50:end], label="Lf")
     savefig("figs/L.png")
+
+    plot(E[end-50:end], label="E")
+    plot!(Ei[end-50:end], label="Ei")
+    plot!(Eb[end-50:end], label="Eb")
+    savefig("figs/large_E.png")
 
     plot(ΔL[end-50:end], label="ΔL")
     plot!(ΔLw[end-50:end], label="ΔLw")
