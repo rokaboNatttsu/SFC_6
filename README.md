@@ -1,6 +1,7 @@
 
 **汎用的なSFCモデルを目指す**
 
+- [課題](#課題)
 - [TEM](#tem)
 - [BSM](#bsm)
 - [式一覧](#式一覧)
@@ -10,6 +11,8 @@
     - [1990までと1990からの日本の様子を再現するか？](#1990までと1990からの日本の様子を再現するか)
   - [パラメータの値を変えると各種指標はどう変化するのか、プロット](#パラメータの値を変えると各種指標はどう変化するのかプロット)
 
+# 課題
+政府債務残高対GDP比が大きすぎる問題。資産への税率が低い？キャピタルゲインへの税率が低い？投資家の消費性向が低い？
 
 # TEM
 |                            | 労働者(経常)  | 労働者(資本)  |   投資家(経常)    |   投資家(資本)   |  企業(経常)   |   企業(資本)   |   民間金融機関    |     統合政府     | 合計 |
@@ -53,17 +56,17 @@
 
 # 式一覧
 上から順に計算する
-$W_f=(1-\lambda_w)W_{f-1}+\lambda_w\delta(C_{-1}+C_{a-1}+I_{-1}+G_{-1})$
+$W_f=(1-\lambda_w)W_{f-1}+\lambda_w\delta(C_{-1}+C_{a-1}+I_{-1}+G_{-1}-T_{v-1}-T_{af-1}-r_LL_{f-1})$
 $W_b=(1-\lambda_w)W_{b-1}+\lambda_w\delta(-T_{cb-1}+P_{b-1}-IT_{-1}+r_LL_{-1}+r_{GB}GB_{b-1})$
 $W_g=W_{g0}\exp(\gamma t)$
 $W=W_f+W_b+W_g$
 $T_{iw}=\epsilon_1 W$
-$T_{ci}=\max\{0, \epsilon_7(E_{i-1}-\Delta E_{i-1})+\epsilon_8\Delta p_{e-1}(e_{i-1}-\Delta e_{i-1})\}$
-$T_{cb}=\max\{0, \epsilon_7(E_{b-1}-\Delta E_{b-1})+\epsilon_8\Delta p_{e-1}(e_{b-1}-\Delta e_{b-1})\}$
+$T_{ci}=\max\{0, \epsilon_7\Delta p_{e-1}(e_{i-1}-\Delta e_{i-1})+\epsilon_9(E_{i-1}-\Delta E_{i-1})\}$
+$T_{cb}=\max\{0, \epsilon_7\Delta p_{e-1}(e_{b-1}-\Delta e_{b-1})+\epsilon_9(E_{b-1}-\Delta E_{b-1})\}$
 $T_c=T_{ci}+T_{cb}$
 $G=G_0\exp(\gamma t)$
 $C_w=\alpha_4\{\alpha_1(W-T_{iw}-T_{aw}-r_LL_{w-1})+\alpha_2(NW_{w-1}-K_{w-1})\}$
-$C_i=\alpha_5\alpha_3(P_{i-1}-T_{ii}-T_{ai}+r_{GB}GB_{i-1})$
+$C_i=\alpha_5\alpha_3(P_{i-1}+IT_{-1}-T_{ii}-T_{ai}-T_{ci}+r_{GB}GB_{i-1})$
 $C=C_w+C_i$
 $C_{aw}=(1-\alpha_4)\{\alpha_1(W-T_{iw}-T_{aw}-r_LL_{w-1})+\alpha_2(NW_{w-1}-K_{w-1})\}$
 $C_{ai}=(1-\alpha_5)\alpha_3(P_{i-1}-T_{ii}-T_{ai}+r_{GB}GB_{i-1})$
@@ -71,15 +74,15 @@ $C_a=C_{aw}+C_{ai}$
 $I=\max[0, \min\{(\frac{C+C_a+G}{\beta_1 K_{f-1}}-u^T)K_{f-1}+\beta_2K_{f-1}, \beta_3(M_{f-1}-L_{f-1})\}]$
 $T_v=\epsilon_2(C+C_a+G+I)$
 $T_{ff}=\max\{0,\epsilon_3(C+C_a+G+I-W_f-T_v-T_{af}-r_LL_{f-1})\}$
-$T_{aw}=\epsilon_5K_{w-1}$
-$T_{ai}=\epsilon_5K_{i-1}$
+$T_{aw}=\epsilon_5K_{w-1} + \epsilon_8(M_{w-1}-L_{i-1})$
+$T_{ai}=\epsilon_5K_{i-1} + \epsilon_8(M_{i-1}+E_{i-1}+GB_{i-1})$
 $T_{af}=\epsilon_6K_{f-1}$
 $T_a=T_{aw}+T_{ai}+T_{af}$
 $P=C+C_a+G+I-W_f-T_v-T_{ff}-T_{af}-r_LL_{f-1}$
-$P_i=\zeta(P-I)\frac{E_{i-1}}{E_{-1}}$
-$P_b=\zeta(P-I)\frac{E_{b-1}}{E_{-1}}$
+$P_i=\{\zeta_1(P-I)+\zeta_2(M_{f-1}-L_{f-1})\}\frac{E_{i-1}}{E_{-1}}$
+$P_b=\{\zeta_1(P-I)+\zeta_2(M_{f-1}-L_{f-1})\}\frac{E_{b-1}}{E_{-1}}$
 $P_f=P-P_i-P_b$
-$IT=\theta P_b$
+$IT=\theta_1 P_b + \theta_2 NL_{b-1}$
 $T_{ii}=\epsilon_4(P_i+IT+r_{GB}GB_{i-1})$
 $T_i=T_{iw}+T_{ii}$
 $T_{fb}=\max\{0, \epsilon_3(-W_b+P_b+r_LL_{-1}+r_{GB}GB_{b-1})\}$
@@ -91,7 +94,7 @@ $NL_i=-C_{ai}+S_i$
 $NL_f=P_f-I$
 $NL_b=-W_b-T_{fb}-T_{cb}+P_b-S+r_LL_{-1}+r_{GB}GB_{b-1}$
 $NL_g=-G-W_g+T_i+T_v+T_f+T_a+T_c-r_{GB}GB_{-1}$
-$L_w=\eta_1(W-T_i)$
+$L_w=\eta_1(W-T_{iw}-T_{aw}-r_LL_{w-1})$
 $\Delta L_w=L_w-L_{w-1}$
 $H_w=\eta_2C_w$
 $\Delta H_w=H_w-H_{w-1}$
@@ -195,16 +198,16 @@ $(\alpha_1, \alpha_2, \alpha_3, \alpha_4, \alpha_5)=(0.9, 0.05, 0.2, 0.9, 0.7)$
 $(\beta_1, \beta_2, \beta_3, \beta_4)=(1,0.05,1, 0.05)$
 $\gamma=0.02$
 $\delta=0.65$
-$(\epsilon_1, \epsilon_2, \epsilon_3, \epsilon_4, \epsilon_5, \epsilon_6, \epsilon_7, \epsilon_8)=(0.3,0.1,0.2,0.2, 0.05, 0.02, 0.1, 0.1)$
+$(\epsilon_1, \epsilon_2, \epsilon_3, \epsilon_4, \epsilon_5, \epsilon_6, \epsilon_7, \epsilon_8)=(0.3,0.1,0.2,0.2, 0.03, 0.02, 0.2, 0.01)$
 $\zeta=0.3$
 $(\eta_1,\eta_2,\eta_3,\eta_4,\eta_5)=(5,0.1,0.3,0.5,0.01)$
-$\theta=0.3$
+$(\theta_1, \theta_2)=(0.3, 0.2)$
 $(\lambda_V, \lambda_w)=(0.5, 0.5)$
 $(\lambda_{10}, \lambda_{20}, \lambda_{30})=(0.3, 0.4, 0.3)$
 $\begin{pmatrix}  \lambda_{11} & \lambda_{12} & \lambda_{13}\\  \lambda_{21} & \lambda_{22} & \lambda_{23}\\  \lambda_{31} & \lambda_{23} & \lambda_{33}\end{pmatrix}=\begin{pmatrix}  1 & -0.5 & -0.5\\  -0.5 & 1 & -0.5\\  -0.5 & -0.5 & 1\end{pmatrix}$
 $(\lambda_{40}, \lambda_{50})=(0.5, 0.5)$
 $\begin{pmatrix}  \lambda_{41} & \lambda_{42}\\  \lambda_{51} & \lambda_{52}\end{pmatrix}=\begin{pmatrix}  0.7 & -0.7\\  -0.7 & 0.7\end{pmatrix}$
-$(r_L,r_{GB})=(0.01, 0.03)$
+$(r_L,r_{GB})=(0.01, 0.02)$
 $u^T=0.8$
 
 # 再現されるか確かめたい現象

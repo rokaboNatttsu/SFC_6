@@ -24,15 +24,15 @@ NWw, NWi, NWf, NWb, NWg, NW = zeros(N), zeros(N), zeros(N), zeros(N), zeros(N), 
 Vi, Vb, Vie, Vbe, ΔVi, ΔVb = zeros(N), zeros(N), zeros(N), zeros(N), zeros(N), zeros(N)
 Eie, GBie, Ebe, GBbe = zeros(N), zeros(N), zeros(N), zeros(N)
 pe, Δpe = zeros(N), zeros(N)
-rL, rGB, uT = 0.01, 0.03, 0.8
-α1, α2, α3, α4, α5 = 0.95, 0.05, 0.02, 0.9, 0.7
+rL, rGB, uT = 0.01, 0.02, 0.8
+α1, α2, α3, α4, α5 = 0.95, 0.05, 0.1, 0.9, 0.7
 β1, β2, β3, β4 = 1, 0.05, 1, 0.05
 γ = 0.02
-δ = 0.7
-ϵ1, ϵ2, ϵ3, ϵ4, ϵ5, ϵ6, ϵ7, ϵ8 = 0.3, 0.1, 0.2, 0.2, 0.05, 0.02, 0.02, 0.1
-ζ = 0.3
-η1, η2, η3, η4, η5 = 5, 0.5, 0.5, 1, 0.01
-θ = 0.3
+δ = 0.68
+ϵ1, ϵ2, ϵ3, ϵ4, ϵ5, ϵ6, ϵ7, ϵ8, ϵ9 = 0.2, 0.1, 0.2, 0.2, 0.03, 0.02, 0.2, 0.01, 0.01
+ζ1, ζ2 = 0.3, 0.05
+η1, η2, η3, η4, η5 = 5, 0.5, 1, 1, 0.01
+θ1, θ2 = 0.3, 0.2
 λV, λw = 0.5, 0.5
 λ10, λ20, λ30 = 0.2, 0.4, 0.4
 λ11, λ12, λ13 = 1, -0.5, -0.5
@@ -60,17 +60,17 @@ Vi[1], Vb[1], Vie[1], Vbe[1] = Mi[1]+Ei[1]+GBi[1], Eb[1]+GBb[1], Mi[1]+Ei[1]+GBi
 
 function run(time_range::UnitRange)
     for t=time_range
-        Wf[t] = (1-λw)*Wf[t-1] + λw*δ*(C[t-1]+Ca[t-1]+I[t-1]+G[t-1])
+        Wf[t] = (1-λw)*Wf[t-1] + λw*δ*(C[t-1]+Ca[t-1]+I[t-1]+G[t-1]-Tv[t-1]-Taf[t]-rL*Lf[t-1])
         Wb[t] = (1-λw)*Wb[t-1] + λw*δ*(-Tcb[t-1]-IT[t-1]+Pb[t-1]+rL*L[t-1]+rGB*GBb[t-1])
         Wg[t] = Wg0*exp(γ*t)
         W[t] = Wf[t] + Wb[t] + Wg[t]
         Tiw[t] = ϵ1*W[t]
-        Tci[t] = max(0, ϵ7*(Ei[t-1]-ΔEi[t-1]) + ϵ8*Δpe[t-1]*(ei[t-1]-Δei[t-1]))
-        Tcb[t] = max(0, ϵ7*(Eb[t-1]-ΔEb[t-1]) + ϵ8*Δpe[t-1]*(eb[t-1]-Δeb[t-1]))
-        Tc[t]  = Tci[t] + Tcb[t]
+        Tci[t] = max(0, ϵ7*Δpe[t-1]*(ei[t-1]-Δei[t-1])+ϵ9*(Ei[t-1]-ΔEi[t-1]))
+        Tcb[t] = max(0, ϵ7*Δpe[t-1]*(eb[t-1]-Δeb[t-1])+ϵ9*(Eb[t-1]-ΔEb[t-1]))
+        Tc[t] = Tci[t] + Tcb[t]
         G[t] = G0*exp(γ*t)
         Cw[t] = α4*(α1*(W[t]-Tiw[t]-Taw[t]-rL*Lw[t-1]) + α2*(NWw[t-1]-Kw[t-1]))
-        Ci[t] = α5*α3*(Pi[t-1]-Tii[t-1]-Tai[t]+rGB*GBi[t-1])
+        Ci[t] = α5*α3*(Pi[t-1]+IT[t-1]-Tii[t-1]-Tai[t]-Tci[t]+rGB*GBi[t-1])
         C[t] = Cw[t] + Ci[t]
         Caw[t] = (1 - α4)*(α1*(W[t]-Tiw[t]-Taw[t]-rL*Lw[t-1]) + α2*(NWw[t-1]-Kw[t-1]))
         Cai[t] = (1 - α5)*α3*(Pi[t-1]-Tii[t-1]-Tai[t]+rGB*GBi[t-1])
@@ -78,15 +78,15 @@ function run(time_range::UnitRange)
         I[t] = max(0, min(((C[t]+Ca[t]+G[t])/(β1*Kf[t-1]) - uT)*Kf[t-1] + β2*Kf[t-1], β3*(Mf[t-1]-Lf[t-1])))
         Tv[t] = ϵ2*(C[t]+Ca[t]+G[t]+I[t])
         Tff[t] = max(0, ϵ3*(C[t]+Ca[t]+G[t]+I[t]-Wf[t]-Tv[t]-Taf[t]-rL*Lf[t-1]))
-        Taw[t] = ϵ5*Kw[t-1]
-        Tai[t] = ϵ5*Ki[t-1]
+        Taw[t] = ϵ5*Kw[t-1] + ϵ8*(Mw[t-1]-Lw[t-1])
+        Tai[t] = ϵ5*Ki[t-1] + ϵ8*(Mi[t-1]+Ei[t-1]+GBi[t-1])
         Taf[t] = ϵ6*Kf[t-1]
         Ta[t] = Taw[t] + Tai[t] + Taf[t]
         P[t] = C[t]+Ca[t]+G[t]+I[t]-Wf[t]-Tv[t]-Tff[t]-Taf[t]-rL*Lf[t-1]
-        Pi[t] = ζ*(P[t]-I[t])*Ei[t-1]/E[t-1]
-        Pb[t] = ζ*(P[t]-I[t])*Eb[t-1]/E[t-1]
+        Pi[t] = (ζ1*(P[t]-I[t])+ζ2*(Mf[t-1]-Lf[t-1]))*Ei[t-1]/E[t-1]
+        Pb[t] = (ζ1*(P[t]-I[t])+ζ2*(Mf[t-1]-Lf[t-1]))*Eb[t-1]/E[t-1]
         Pf[t] = P[t]-Pi[t]-Pb[t]
-        IT[t] = θ*Pb[t]
+        IT[t] = θ1*Pb[t] + θ2*NLb[t-1]
         Tii[t] = ϵ4*(Pi[t]+IT[t]+rGB*GBi[t-1])
         Ti[t] = Tiw[t] + Tii[t]
         Tfb[t] = max(0, ϵ3*(-Wb[t]-Tcb[t]+Pb[t]+rL*L[t-1]+rGB*GBb[t-1]))
@@ -98,7 +98,7 @@ function run(time_range::UnitRange)
         NLf[t] = Pf[t] - I[t]
         NLb[t] = -Wb[t] - Tfb[t] - Tcb[t] + Pb[t] - IT[t] + rL*L[t-1] + rGB*GBb[t-1]
         NLg[t] = -G[t] - Wg[t] + Ti[t] + Tv[t] + Tf[t] + Ta[t] + Tc[t] - rGB*GB[t-1]
-        Lw[t] = η1*(W[t] - Ti[t])
+        Lw[t] = η1*(W[t] - Tiw[t] - Taw[t] - rL*Lw[t-1])
         ΔLw[t] = Lw[t] - Lw[t-1]
         Hw[t] = η2*Cw[t]
         ΔHw[t] = Hw[t] - Hw[t-1]
@@ -173,7 +173,7 @@ function all_plot()
     plot(C[end-50:end], label="C")
     plot!(Cw[end-50:end], label="Cw")
     plot!(Ci[end-50:end], label="Ci")
-    plot!(Ca[end-50:end], label="C")
+    plot!(Ca[end-50:end], label="Ca")
     plot!(Caw[end-50:end], label="Caw")
     plot!(Cai[end-50:end], label="Cai")
     savefig("figs/C.png")
@@ -234,14 +234,17 @@ function all_plot()
     plot(e[end-50:end], label="e")
     plot!(ei[end-50:end], label="ei")
     plot!(eb[end-50:end], label="eb")
+    plot!(zeros(51), label=nothing, color="Gray")
     savefig("figs/e.png")
 
     plot(Δe[end-50:end], label="Δe")
     plot!(Δei[end-50:end], label="Δei")
     plot!(Δeb[end-50:end], label="Δeb")
+    plot!(zeros(51), label=nothing, color="Gray")
     savefig("figs/Δe.png")
 
     plot(pe[end-50:end], label="pe")
+    plot!(zeros(51), label=nothing, color="Gray")
     savefig("figs/pe.png")
 
     plot(K[end-50:end], label="K")
@@ -294,8 +297,8 @@ function all_plot()
     plot!(NLg[end-50:end], label="NLg")
     savefig("figs/NL.png")
 
-    plot(((H+GB)./(C+G+I))[end-50:end], label="(H+GB)/Y")
+    plot(((H+GB)./(C+Ca+G+Wg+I))[end-50:end], label="(H+GB)/GDP")
     plot!(zeros(51), label=nothing, color="Gray")
-    savefig("figs/Debt-to-GDP ratio.png")
+    savefig("figs/Gov-Debt-to-GDP ratio.png")
 end
 all_plot()
