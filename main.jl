@@ -30,7 +30,7 @@ rL, rGB, uT = 0.01, 0.02, 0.8
 β1, β2, β3, β4 = 1, 0.05, 1, 0.05
 γ = 0.02
 δ = 0.68
-ϵ1, ϵ2, ϵ3, ϵ4, ϵ5, ϵ6, ϵ7, ϵ8, ϵ9 = 0.2, 0.1, 0.2, 0.2, 0.03, 0.03, 0.2, 0.01, 0.02
+ϵ1, ϵ2, ϵ3, ϵ4, ϵ5, ϵ6, ϵ7, ϵ8, ϵ9 = 0.2, 0.1, 0.2, 0.4, 0.03, 0.03, 0.2, 0.01, 0.02
 ζ1, ζ2 = 0.3, 0.05
 η1, η2, η3, η4, η5 = 5, 0.05, 1, 1, 0.01
 θ1, θ2 = 0.05, 0.3
@@ -65,7 +65,7 @@ function run(time_range::UnitRange)
     for t=time_range
         Wf[t] = (1-λw)*Wf[t-1] + λw*δ*(C[t-1]+Ca[t-1]+I[t-1]+G[t-1]-Tv[t-1]-Taf[t-1]-rL*Lf[t-1])
         Wb[t] = (1-λw)*Wb[t-1] + λw*δ*(-Tcb[t-1]+Pb[t-1]-TDb[t-1]+rL*L[t-1]+rGB*GBb[t-1])
-        Wg[t] = Wg0*exp(γ*t)
+        Wg[t] = Wg[t-1]*exp(γ)
         W[t] = Wf[t] + Wb[t] + Wg[t]
         Tiw[t] = ϵ1*W[t]
         Tci[t] = max(0, ϵ7*Δpe[t-1]*(ei[t-1]-Δei[t-1])+ϵ9*(Ei[t-1]+D[t-1]))
@@ -75,7 +75,7 @@ function run(time_range::UnitRange)
         Tai[t] = ϵ5*Ki[t-1] + ϵ8*(Mi[t-1]+Ei[t-1]+GBi[t-1])
         Taf[t] = ϵ6*Kf[t-1]
         Ta[t] = Taw[t] + Tai[t] + Taf[t]
-        G[t] = G0*exp(γ*t)
+        G[t] = G[t-1]*exp(γ)
         Cw[t] = α4*(α1*(W[t]-Tiw[t]-Taw[t]-rL*Lw[t-1]) + α2*(NWw[t-1]-Kw[t-1]))
         Ci[t] = α5*(α3*(Pi[t-1]+TDb[t-1]-Tii[t-1]-Tai[t-1]-Tci[t]+rGB*GBi[t-1])+α6*(Mi[t-1]+Ei[t-1]+D[t-1]+GBi[t-1]))
         C[t] = Cw[t] + Ci[t]
@@ -112,7 +112,7 @@ function run(time_range::UnitRange)
         Vbe[t] = (1-λV)*Vbe[t-1] + λV*Vb[t-1]^2/(Vb[t-1]-ΔVb[t-1])
         Δe[t] = η3*(I[t]-β2*Kf[t-1])/pe[t-1]
         e[t] = e[t-1] + Δe[t]
-        Lf[t] = max(0, (1+η4)*W[t]-Mf[t-1])
+        Lf[t] = η4*(Wf[t]+Tv[t]+Tff[t]+Taf[t])
         ΔLf[t] = Lf[t] - Lf[t-1]
         ΔL[t] = ΔLw[t] + ΔLf[t]
         L[t] = L[t-1] + ΔL[t]
@@ -139,7 +139,7 @@ function run(time_range::UnitRange)
         GBb[t] = GB[t]*GBbe[t]/(GBie[t]+GBbe[t])
         ΔGBi[t] = GBi[t] - GBi[t-1]
         ΔGBb[t] = GBb[t] - GBb[t-1]
-        Δei[t] = (NLi[t] - ΔMi[t] - ΔGBi[t])/pe[t-1]
+        Δei[t] = max(-ei[t-1], (NLi[t] - ΔMi[t] - ΔGBi[t])/pe[t-1])
         Δeb[t] = Δe[t] - Δei[t]
         ei[t] = ei[t-1] + Δei[t]
         eb[t] = eb[t-1] + Δeb[t]
@@ -165,155 +165,165 @@ function run(time_range::UnitRange)
     end
 end
 
-run(2:N-40) # 長期トレンドに収束させる
+run(2:N) # 長期トレンドに収束させる。ついでにベースラインシナリオも計算
+plot(-10:40, C[end-50:end], label="baseline", title="C")
 
 #   ここでパラメータを変える
+#GB = 0.03 #   国債の利回りの増加
+#ϵ5, ϵ8 = 0.05, 0.02 #   家計の資産税増税
+#ϵ1, ϵ4 = 0.3, 0.5  #   所得税増税
+#ϵ2 = 0.2#   付加価値税増税
+#ϵ3 = 0.3#   法人税増税
+#γ = 0.03#   政府支出増加率増加
 
-run(N-39:N) # パラメータの変化に対する短期・中期・長期的影響をシミュレーションする
+run(N-40:N) # パラメータの変化に対する短期・中期・長期的影響をシミュレーションする
+plot!(-10:40, C[end-50:end], label="contrast")
+
+savefig("figs/C_diff.png")
 
 function all_plot()
-    plot(C[end-50:end], label="C")
-    plot!(Ca[end-50:end], label="C")
-    plot!(G[end-50:end], label="G")
-    plot!(I[end-50:end], label="I")
+    plot(-10:40, C[end-50:end], label="C")
+    plot!(-10:40, Ca[end-50:end], label="Ca")
+    plot!(-10:40, G[end-50:end], label="G")
+    plot!(-10:40, I[end-50:end], label="I")
     savefig("figs/Y.png")
 
-    plot(C[end-50:end], label="C")
-    plot!(Cw[end-50:end], label="Cw")
-    plot!(Ci[end-50:end], label="Ci")
-    plot!(Ca[end-50:end], label="Ca")
-    plot!(Caw[end-50:end], label="Caw")
-    plot!(Cai[end-50:end], label="Cai")
+    plot(-10:40, C[end-50:end], label="C")
+    plot!(-10:40, Cw[end-50:end], label="Cw")
+    plot!(-10:40, Ci[end-50:end], label="Ci")
+    plot!(-10:40, Ca[end-50:end], label="Ca")
+    plot!(-10:40, Caw[end-50:end], label="Caw")
+    plot!(-10:40, Cai[end-50:end], label="Cai")
     savefig("figs/C.png")
 
-    plot(Ti[end-50:end], label="Ti")
-    plot!(Tiw[end-50:end], label="Tiw")
-    plot!(Tii[end-50:end], label="Tii")
+    plot(-10:40, Ti[end-50:end], label="Ti")
+    plot!(-10:40, Tiw[end-50:end], label="Tiw")
+    plot!(-10:40, Tii[end-50:end], label="Tii")
     savefig("figs/Ti.png")
 
-    plot(Ta[end-50:end], label="Ta")
-    plot!(Taw[end-50:end], label="Taw")
-    plot!(Tai[end-50:end], label="Tai")
-    plot!(Taf[end-50:end], label="Taf")
+    plot(-10:40, Ta[end-50:end], label="Ta")
+    plot!(-10:40, Taw[end-50:end], label="Taw")
+    plot!(-10:40, Tai[end-50:end], label="Tai")
+    plot!(-10:40, Taf[end-50:end], label="Taf")
     savefig("figs/Ta.png")
 
-    plot(Tf[end-50:end], label="Tf")
-    plot!(Tfb[end-50:end], label="Tfb")
-    plot!(Tff[end-50:end], label="Tff")
+    plot(-10:40, Tf[end-50:end], label="Tf")
+    plot!(-10:40, Tfb[end-50:end], label="Tfb")
+    plot!(-10:40, Tff[end-50:end], label="Tff")
     savefig("figs/Tf.png")
 
-    plot(Tc[end-50:end], label="Tc")
-    plot!(Tcb[end-50:end], label="Tcb")
-    plot!(Tci[end-50:end], label="Tci")
+    plot(-10:40, Tc[end-50:end], label="Tc")
+    plot!(-10:40, Tcb[end-50:end], label="Tcb")
+    plot!(-10:40, Tci[end-50:end], label="Tci")
     savefig("figs/Tc.png")
 
-    plot(Ti[end-50:end], label="Ti")
-    plot!(Tv[end-50:end], label="Tv")
-    plot!(Tf[end-50:end], label="Tf")
-    plot!(Ta[end-50:end], label="Ta")
-    plot!(Tc[end-50:end], label="Tc")
+    plot(-10:40, Ti[end-50:end], label="Ti")
+    plot!(-10:40, Tv[end-50:end], label="Tv")
+    plot!(-10:40, Tf[end-50:end], label="Tf")
+    plot!(-10:40, Ta[end-50:end], label="Ta")
+    plot!(-10:40, Tc[end-50:end], label="Tc")
     savefig("figs/T.png")
 
-    plot(W[end-50:end], label="W")
-    plot!(Wf[end-50:end], label="Wf")
-    plot!(Wb[end-50:end], label="Wb")
-    plot!(Wg[end-50:end], label="Wg")
+    plot(-10:40, W[end-50:end], label="W")
+    plot!(-10:40, Wf[end-50:end], label="Wf")
+    plot!(-10:40, Wb[end-50:end], label="Wb")
+    plot!(-10:40, Wg[end-50:end], label="Wg")
     savefig("figs/W.png")
 
-    plot(TDb[end-50:end], label="TDb")
-    plot!(TDf[end-50:end], label="TDf")
-    plot!(P[end-50:end], label="P")
-    plot!(Pb[end-50:end], label="Pb")
-    plot!(Pi[end-50:end], label="Pi")
-    plot!(Pf[end-50:end], label="Pf")
+    plot(-10:40, TDb[end-50:end], label="TDb")
+    plot!(-10:40, TDf[end-50:end], label="TDf")
+    plot!(-10:40, P[end-50:end], label="P")
+    plot!(-10:40, Pb[end-50:end], label="Pb")
+    plot!(-10:40, Pi[end-50:end], label="Pi")
+    plot!(-10:40, Pf[end-50:end], label="Pf")
     savefig("figs/P_and_TD.png")
 
-    plot(Mw[end-50:end], label="Mw")
-    plot!(Mi[end-50:end], label="Mi")
-    plot!(Mf[end-50:end], label="Mf")
-    plot!(M[end-50:end], label="M")
+    plot(-10:40, Mw[end-50:end], label="Mw")
+    plot!(-10:40, Mi[end-50:end], label="Mi")
+    plot!(-10:40, Mf[end-50:end], label="Mf")
+    plot!(-10:40, M[end-50:end], label="M")
     savefig("figs/M.png")
 
-    plot(ΔMw[end-50:end], label="ΔMw")
-    plot!(ΔMi[end-50:end], label="ΔMi")
-    plot!(ΔMf[end-50:end], label="ΔMf")
-    plot!(ΔM[end-50:end], label="ΔM")
+    plot(-10:40, ΔMw[end-50:end], label="ΔMw")
+    plot!(-10:40, ΔMi[end-50:end], label="ΔMi")
+    plot!(-10:40, ΔMf[end-50:end], label="ΔMf")
+    plot!(-10:40, ΔM[end-50:end], label="ΔM")
     savefig("figs/ΔM.png")
 
-    plot(e[end-50:end], label="e")
-    plot!(ei[end-50:end], label="ei")
-    plot!(eb[end-50:end], label="eb")
-    plot!(zeros(51), label=nothing, color="Gray")
+    plot(-10:40, e[end-50:end], label="e")
+    plot!(-10:40, ei[end-50:end], label="ei")
+    plot!(-10:40, eb[end-50:end], label="eb")
+    plot!(-10:40, zeros(51), label=nothing, color="Gray")
     savefig("figs/small_e.png")
 
-    plot(Δe[end-50:end], label="Δe")
-    plot!(Δei[end-50:end], label="Δei")
-    plot!(Δeb[end-50:end], label="Δeb")
-    plot!(zeros(51), label=nothing, color="Gray")
+    plot(-10:40, Δe[end-50:end], label="Δe")
+    plot!(-10:40, Δei[end-50:end], label="Δei")
+    plot!(-10:40, Δeb[end-50:end], label="Δeb")
+    plot!(-10:40, zeros(51), label=nothing, color="Gray")
     savefig("figs/Δe.png")
 
-    plot(pe[end-50:end], label="pe")
-    plot!(zeros(51), label=nothing, color="Gray")
+    plot(-10:40, pe[end-50:end], label="pe")
+    plot!(-10:40, zeros(51), label=nothing, color="Gray")
     savefig("figs/pe.png")
 
-    plot(K[end-50:end], label="K")
-    plot!(Kf[end-50:end], label="Kf")
-    plot!(Ki[end-50:end], label="Ki")
-    plot!(Kw[end-50:end], label="Kw")
+    plot(-10:40, K[end-50:end], label="K")
+    plot!(-10:40, Kf[end-50:end], label="Kf")
+    plot!(-10:40, Ki[end-50:end], label="Ki")
+    plot!(-10:40, Kw[end-50:end], label="Kw")
     savefig("figs/K.png")
 
-    plot(L[end-50:end], label="L")
-    plot!(Lw[end-50:end], label="Lw")
-    plot!(Lf[end-50:end], label="Lf")
+    plot(-10:40, L[end-50:end], label="L")
+    plot!(-10:40, Lw[end-50:end], label="Lw")
+    plot!(-10:40, Lf[end-50:end], label="Lf")
     savefig("figs/L.png")
 
-    plot(E[end-50:end], label="E")
-    plot!(Ei[end-50:end], label="Ei")
-    plot!(Eb[end-50:end], label="Eb")
-    plot!(D[end-50:end], label="D")
+    plot(-10:40, E[end-50:end], label="E")
+    plot!(-10:40, Ei[end-50:end], label="Ei")
+    plot!(-10:40, Eb[end-50:end], label="Eb")
+    plot!(-10:40, D[end-50:end], label="D")
     savefig("figs/E_and_D.png")
 
-    plot(ΔL[end-50:end], label="ΔL")
-    plot!(ΔLw[end-50:end], label="ΔLw")
-    plot!(ΔLf[end-50:end], label="ΔLf")
+    plot(-10:40, ΔL[end-50:end], label="ΔL")
+    plot!(-10:40, ΔLw[end-50:end], label="ΔLw")
+    plot!(-10:40, ΔLf[end-50:end], label="ΔLf")
     savefig("figs/ΔL.png")
 
-    plot(H[end-50:end], label="H")
-    plot!(Hw[end-50:end], label="Hw")
-    plot!(Hb[end-50:end], label="Hb")
+    plot(-10:40, H[end-50:end], label="H")
+    plot!(-10:40, Hw[end-50:end], label="Hw")
+    plot!(-10:40, Hb[end-50:end], label="Hb")
     savefig("figs/H.png")
 
-    plot(ΔH[end-50:end], label="ΔH")
-    plot!(ΔHw[end-50:end], label="ΔHw")
-    plot!(ΔHb[end-50:end], label="ΔHb")
+    plot(-10:40, ΔH[end-50:end], label="ΔH")
+    plot!(-10:40, ΔHw[end-50:end], label="ΔHw")
+    plot!(-10:40, ΔHb[end-50:end], label="ΔHb")
     savefig("figs/ΔH.png")
 
-    plot(GB[end-50:end], label="GB")
-    plot!(GBi[end-50:end], label="GBi")
-    plot!(GBb[end-50:end], label="GBb")
+    plot(-10:40, GB[end-50:end], label="GB")
+    plot!(-10:40, GBi[end-50:end], label="GBi")
+    plot!(-10:40, GBb[end-50:end], label="GBb")
     savefig("figs/GB.png")
 
-    plot(ΔGB[end-50:end], label="ΔGB")
-    plot!(ΔGBi[end-50:end], label="ΔGBi")
-    plot!(ΔGBb[end-50:end], label="ΔGBb")
+    plot(-10:40, ΔGB[end-50:end], label="ΔGB")
+    plot!(-10:40, ΔGBi[end-50:end], label="ΔGBi")
+    plot!(-10:40, ΔGBb[end-50:end], label="ΔGBb")
     savefig("figs/ΔGB.png")
 
-    plot(NWw[end-50:end], label="NWw")
-    plot!(NWi[end-50:end], label="NWi")
-    plot!(NWf[end-50:end], label="NWf")
-    plot!(NWb[end-50:end], label="NWb")
-    plot!(NWg[end-50:end], label="NWg")
+    plot(-10:40, NWw[end-50:end], label="NWw")
+    plot!(-10:40, NWi[end-50:end], label="NWi")
+    plot!(-10:40, NWf[end-50:end], label="NWf")
+    plot!(-10:40, NWb[end-50:end], label="NWb")
+    plot!(-10:40, NWg[end-50:end], label="NWg")
     savefig("figs/NW.png")
 
-    plot(NLw[end-50:end], label="NLw")
-    plot!(NLi[end-50:end], label="NLi")
-    plot!(NLf[end-50:end], label="NLf")
-    plot!(NLb[end-50:end], label="NLb")
-    plot!(NLg[end-50:end], label="NLg")
+    plot(-10:40, NLw[end-50:end], label="NLw")
+    plot!(-10:40, NLi[end-50:end], label="NLi")
+    plot!(-10:40, NLf[end-50:end], label="NLf")
+    plot!(-10:40, NLb[end-50:end], label="NLb")
+    plot!(-10:40, NLg[end-50:end], label="NLg")
     savefig("figs/NL.png")
 
-    plot(((H+GB)./(C+Ca+G+Wg+I))[end-50:end], label="(H+GB)/GDP")
-    plot!(zeros(51), label=nothing, color="Gray")
+    plot(-10:40, ((H+GB)./(C+Ca+G+Wg+I))[end-50:end], label="(H+GB)/GDP")
+    plot!(-10:40, zeros(51), label=nothing, color="Gray")
     savefig("figs/Gov-Debt-to-GDP ratio.png")
 end
 all_plot()

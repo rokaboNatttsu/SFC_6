@@ -102,7 +102,7 @@
 - $V_b^e=(1-\lambda_V)V_{b-1}^e+\lambda_VV_{b-1}\frac{V_{b-1}}{V_{b-1}-\Delta V_{b-1}}$
 - $\Delta e=\frac{\eta_3(I-\beta_2K_{f-1})}{p_{e-1}}$
 - $e=e_{-1}+\Delta e$
-- $L_f=\max(0, (1+\eta_4)W-M_{f-1})$
+- $L_f=\eta_4(W_f+T_v+T_{ff}+T_{af})$
 - $\Delta L_f=L_f-L_{f-1}$
 - $\Delta L=\Delta L_w+\Delta L_f$
 - $L=L_{-1}+\Delta L$
@@ -209,7 +209,7 @@ $$
 - $(\beta_1, \beta_2, \beta_3, \beta_4)=(1,0.05,1, 0.05)$
 - $\gamma=0.02$
 - $\delta=0.65$
-- $(\epsilon_1, \epsilon_2, \epsilon_3, \epsilon_4, \epsilon_5, \epsilon_6, \epsilon_7, \epsilon_8, \epsilon_9)=(0.3,0.1,0.2,0.2, 0.03, 0.03, 0.2, 0.01, 0.02)$
+- $(\epsilon_1, \epsilon_2, \epsilon_3, \epsilon_4, \epsilon_5, \epsilon_6, \epsilon_7, \epsilon_8, \epsilon_9)=(0.2,0.1,0.2,0.4, 0.03, 0.03, 0.2, 0.01, 0.02)$
 - $\zeta_1, \zeta_2 =0.3, 0.05$
 - $(\eta_1,\eta_2,\eta_3,\eta_4,\eta_5)=(5,0.05,1,1,0.01)$
 - $(\theta_1, \theta_2)=(0.05, 0.3)$
