@@ -1,6 +1,7 @@
 
 **閉鎖経済ではあるものの汎用的なSFCモデルを目指す**
 
+- [未解決事項](#未解決事項)
 - [TEM](#tem)
 - [BSM](#bsm)
 - [式一覧](#式一覧)
@@ -8,6 +9,8 @@
 - [再現されるか確かめたい現象](#再現されるか確かめたい現象)
 - [政策の変化に対してどう反応するか](#政策の変化に対してどう反応するか)
 
+# 未解決事項
+- 振動が収まらない
 
 # TEM
 |                              | 労働者(経常)  | 労働者(資本)  |   投資家(経常)    |     投資家(資本)     |  企業(経常)   |     企業(資本)     |     民間金融機関     |     統合政府     | 合計 |
@@ -72,7 +75,7 @@
 - $C_{aw}=(1-\alpha_4)\{\alpha_1(W-T_{iw}-T_{aw}-r_LL_{w-1})+\alpha_2(NW_{w-1}-K_{w-1})\}$
 - $C_{ai}=(1-\alpha_5)\{\alpha_3(P_{i-1}+TD_{b-1}-T_{ii-1}-T_{ai-1}-T_{ci}+r_{GB}GB_{i-1})+\alpha_6(M_{i-1}+E_{i-1}+D_{-1}+GB_{i-1})\}$
 - $C_a=C_{aw}+C_{ai}$
-- $I=\max[0, \min\{(\frac{C+C_a+G}{\beta_1 K_{f-1}}-u^T)K_{f-1}+\beta_2K_{f-1}, \beta_3(M_{f-1}-L_{f-1})\}]$
+- $I=\max[0, \min\{\beta_5(M_{f-1}-L_{f-1})+(\frac{C+C_a+G}{\beta_1 K_{f-1}}-u^T)K_{f-1}+\beta_2K_{f-1}, \beta_3(M_{f-1}-L_{f-1})\}]$
 - $T_v=\epsilon_2(C+C_a+G+I)$
 - $T_{ff}=\max\{0,\epsilon_3(C+C_a+G+I-W_f-T_v-T_{af}-r_LL_{f-1})\}$
 - $P=C+C_a+G+I-W_f-T_v-T_{ff}-T_{af}-r_LL_{f-1}$
@@ -206,11 +209,11 @@ $$
 
 # 外生変数とパラメータ
 - $(\alpha_1, \alpha_2, \alpha_3, \alpha_4, \alpha_5, \alpha_6)=(0.9, 0.05, 0.2, 0.9, 0.7, 0.01)$
-- $(\beta_1, \beta_2, \beta_3, \beta_4)=(1,0.05,1, 0.05)$
-- $\gamma=0.02$
+- $(\beta_1, \beta_2, \beta_3, \beta_4, \beta_5)=(1,0.05,1, 0.05, 0.05)$
+- $\gamma=0.01$
 - $\delta=0.65$
 - $(\epsilon_1, \epsilon_2, \epsilon_3, \epsilon_4, \epsilon_5, \epsilon_6, \epsilon_7, \epsilon_8, \epsilon_9)=(0.2,0.1,0.2,0.4, 0.03, 0.03, 0.2, 0.01, 0.02)$
-- $\zeta_1, \zeta_2 =0.3, 0.05$
+- $\zeta_1, \zeta_2 =0.3, 0.1$
 - $(\eta_1,\eta_2,\eta_3,\eta_4,\eta_5)=(5,0.05,1,1,0.01)$
 - $(\theta_1, \theta_2)=(0.05, 0.3)$
 - $(\lambda_V, \lambda_w)=(0.5, 0.5)$

@@ -26,12 +26,12 @@ Vi, Vb, Vie, Vbe, ΔVi, ΔVb = zeros(N), zeros(N), zeros(N), zeros(N), zeros(N),
 Eie, GBie, Ebe, GBbe = zeros(N), zeros(N), zeros(N), zeros(N)
 pe, Δpe = zeros(N), zeros(N)
 rL, rGB, uT = 0.01, 0.02, 0.8
-α1, α2, α3, α4, α5, α6 = 0.95, 0.05, 0.1, 0.9, 0.7, 0.01
-β1, β2, β3, β4 = 1, 0.05, 1, 0.05
-γ = 0.02
+α1, α2, α3, α4, α5, α6 = 0.95, 0.05, 0.1, 0.9, 0.7, 0.01    # 0.95, 0.05, 0.1, 0.9, 0.7, 0.01
+β1, β2, β3, β4, β5 = 1, 0.05, 1, 0.05, 0.05
+γ = 0.01
 δ = 0.68
 ϵ1, ϵ2, ϵ3, ϵ4, ϵ5, ϵ6, ϵ7, ϵ8, ϵ9 = 0.2, 0.1, 0.2, 0.4, 0.03, 0.03, 0.2, 0.01, 0.02
-ζ1, ζ2 = 0.3, 0.05
+ζ1, ζ2 = 0.3, 0.1
 η1, η2, η3, η4, η5 = 5, 0.05, 1, 1, 0.01
 θ1, θ2 = 0.05, 0.3
 λV, λw = 0.5, 0.5
@@ -82,7 +82,7 @@ function run(time_range::UnitRange)
         Caw[t] = (1 - α4)*(α1*(W[t]-Tiw[t]-Taw[t]-rL*Lw[t-1]) + α2*(NWw[t-1]-Kw[t-1]))
         Cai[t] = (1 - α5)*(α3*(Pi[t-1]+TDb[t-1]-Tii[t-1]-Tai[t-1]-Tci[t]+rGB*GBi[t-1])+α6*(Mi[t-1]+Ei[t-1]+D[t-1]+GBi[t-1]))
         Ca[t] = Caw[t] + Cai[t]
-        I[t] = max(0, min(((C[t]+Ca[t]+G[t])/(β1*Kf[t-1]) - uT)*Kf[t-1] + β2*Kf[t-1], β3*(Mf[t-1]-Lf[t-1])))
+        I[t] = max(0, min(β5*(Mf[t-1]-Lf[t-1])+((C[t]+Ca[t]+G[t])/(β1*Kf[t-1]) - uT)*Kf[t-1] + β2*Kf[t-1], β3*(Mf[t-1]-Lf[t-1])))
         Tv[t] = ϵ2*(C[t]+Ca[t]+G[t]+I[t])
         Tff[t] = max(0, ϵ3*(C[t]+Ca[t]+G[t]+I[t]-Wf[t]-Tv[t]-Taf[t]-rL*Lf[t-1]))
         P[t] = C[t]+Ca[t]+G[t]+I[t]-Wf[t]-Tv[t]-Tff[t]-Taf[t]-rL*Lf[t-1]
@@ -166,83 +166,86 @@ function run(time_range::UnitRange)
 end
 
 run(2:N) # 長期トレンドに収束させる。ついでにベースラインシナリオも計算
-plot(-10:40, Ci[end-50:end], label="baseline", title="Ci")
+plot(-10:40, W[end-50:end], label="baseline", title="W")
 
 #   ここでパラメータを変える
-rGB = 0.03 #   国債の利回りの増加
+#rGB = 0.03 #   国債の利回りの増加
 #ϵ5, ϵ8 = 0.05, 0.02 #   家計の資産税増税
-#ϵ1, ϵ4 = 0.3, 0.5  #   所得税増税
-#ϵ2 = 0.2#   付加価値税増税
-#ϵ3 = 0.3#   法人税増税
-#γ = 0.03#   政府支出増加率増加
+#ϵ6 = 0.01  #    企業の資本への課税の増税
+#ϵ1, ϵ4 = 0.3, 0.6  #  0.2,0.4 所得税増税
+#ϵ2 = 0.05#   付加価値税増税
+#ϵ3 = 0.1# 0.2  法人税増税
+γ = 0.0#   政府支出増加率増加
 
 run(N-40:N) # パラメータの変化に対する短期・中期・長期的影響をシミュレーションする
-plot!(-10:40, Ci[end-50:end], label="contrast")
+plot!(-10:40, W[end-50:end], label="control")
 
-savefig("figs/Ci_diff.png")
+savefig("figs/W_diff.png")
 
 function all_plot()
-    plot(-10:40, C[end-50:end], label="C", yscale=:log10)
-    plot!(-10:40, Ca[end-50:end], label="Ca", yscale=:log10)
-    plot!(-10:40, I[end-50:end], label="I", yscale=:log10)
-    plot!(-10:40, G[end-50:end], label="G", yscale=:log10)
-    plot!(-10:40, Wg[end-50:end], label="Wg", yscale=:log10)
+    plot(-10:40, C[end-50:end], label="C"  )
+    plot!(-10:40, Ca[end-50:end], label="Ca"  )
+    plot!(-10:40, I[end-50:end], label="I"  )
+    plot!(-10:40, G[end-50:end], label="G"  )
+    plot!(-10:40, Wg[end-50:end], label="Wg"  )
     savefig("figs/Y.png")
 
-    plot(-10:40, C[end-50:end], label="C", yscale=:log10)
-    plot!(-10:40, Cw[end-50:end], label="Cw", yscale=:log10)
-    plot!(-10:40, Ci[end-50:end], label="Ci", yscale=:log10)
-    plot!(-10:40, Ca[end-50:end], label="Ca", yscale=:log10)
-    plot!(-10:40, Caw[end-50:end], label="Caw", yscale=:log10)
-    plot!(-10:40, Cai[end-50:end], label="Cai", yscale=:log10)
+    plot(-10:40, C[end-50:end], label="C"  )
+    plot!(-10:40, Cw[end-50:end], label="Cw"  )
+    plot!(-10:40, Ci[end-50:end], label="Ci"  )
+    plot!(-10:40, Ca[end-50:end], label="Ca"  )
+    plot!(-10:40, Caw[end-50:end], label="Caw"  )
+    plot!(-10:40, Cai[end-50:end], label="Cai"  )
     savefig("figs/C.png")
 
-    plot(-10:40, Ti[end-50:end], label="Ti", yscale=:log10)
-    plot!(-10:40, Tiw[end-50:end], label="Tiw", yscale=:log10)
-    plot!(-10:40, Tii[end-50:end], label="Tii", yscale=:log10)
+    plot(-10:40, Ti[end-50:end], label="Ti"  )
+    plot!(-10:40, Tiw[end-50:end], label="Tiw"  )
+    plot!(-10:40, Tii[end-50:end], label="Tii"  )
     savefig("figs/Ti.png")
 
-    plot(-10:40, Ta[end-50:end], label="Ta", yscale=:log10)
-    plot!(-10:40, Taw[end-50:end], label="Taw", yscale=:log10)
-    plot!(-10:40, Tai[end-50:end], label="Tai", yscale=:log10)
-    plot!(-10:40, Taf[end-50:end], label="Taf", yscale=:log10)
+    plot(-10:40, Ta[end-50:end], label="Ta"  )
+    plot!(-10:40, Taw[end-50:end], label="Taw"  )
+    plot!(-10:40, Tai[end-50:end], label="Tai"  )
+    plot!(-10:40, Taf[end-50:end], label="Taf"  )
     savefig("figs/Ta.png")
 
-    plot(-10:40, Tf[end-50:end], label="Tf", yscale=:log10)
-    plot!(-10:40, Tfb[end-50:end], label="Tfb", yscale=:log10)
-    plot!(-10:40, Tff[end-50:end], label="Tff", yscale=:log10)
+    plot(-10:40, Tf[end-50:end], label="Tf"  )
+    plot!(-10:40, Tfb[end-50:end], label="Tfb"  )
+    plot!(-10:40, Tff[end-50:end], label="Tff"  )
     savefig("figs/Tf.png")
 
-    plot(-10:40, Tc[end-50:end], label="Tc", yscale=:log10)
-    plot!(-10:40, Tcb[end-50:end], label="Tcb", yscale=:log10)
-    plot!(-10:40, Tci[end-50:end], label="Tci", yscale=:log10)
+    plot(-10:40, Tc[end-50:end], label="Tc"  )
+    plot!(-10:40, Tcb[end-50:end], label="Tcb"  )
+    plot!(-10:40, Tci[end-50:end], label="Tci"  )
     savefig("figs/Tc.png")
 
-    plot(-10:40, Ti[end-50:end], label="Ti", yscale=:log10)
-    plot!(-10:40, Tv[end-50:end], label="Tv", yscale=:log10)
-    plot!(-10:40, Tf[end-50:end], label="Tf", yscale=:log10)
-    plot!(-10:40, Ta[end-50:end], label="Ta", yscale=:log10)
-    plot!(-10:40, Tc[end-50:end], label="Tc", yscale=:log10)
+    plot(-10:40, Ti[end-50:end], label="Ti"  )
+    plot!(-10:40, Tv[end-50:end], label="Tv"  )
+    plot!(-10:40, Tf[end-50:end], label="Tf"  )
+    plot!(-10:40, Ta[end-50:end], label="Ta"  )
+    plot!(-10:40, Tc[end-50:end], label="Tc"  )
     savefig("figs/T.png")
 
-    plot(-10:40, W[end-50:end], label="W", yscale=:log10)
-    plot!(-10:40, Wf[end-50:end], label="Wf", yscale=:log10)
-    plot!(-10:40, Wb[end-50:end], label="Wb", yscale=:log10)
-    plot!(-10:40, Wg[end-50:end], label="Wg", yscale=:log10)
+    plot(-10:40, W[end-50:end], label="W"  )
+    plot!(-10:40, Wf[end-50:end], label="Wf"  )
+    plot!(-10:40, Wb[end-50:end], label="Wb"  )
+    plot!(-10:40, Wg[end-50:end], label="Wg"  )
     savefig("figs/W.png")
 
-    plot(-10:40, TDb[end-50:end], label="TDb", yscale=:log10)
-    plot!(-10:40, TDf[end-50:end], label="TDf", yscale=:log10)
-    plot!(-10:40, P[end-50:end], label="P", yscale=:log10)
-    plot!(-10:40, Pb[end-50:end], label="Pb", yscale=:log10)
-    plot!(-10:40, Pi[end-50:end], label="Pi", yscale=:log10)
-    plot!(-10:40, Pf[end-50:end], label="Pf", yscale=:log10)
-    savefig("figs/P_and_TD.png")
+    plot(-10:40, TDb[end-50:end], label="TDb"  )
+    plot!(-10:40, TDf[end-50:end], label="TDf"  )
+    savefig("figs/TD.png")
+    
+    plot(-10:40, P[end-50:end], label="P"  )
+    plot!(-10:40, Pb[end-50:end], label="Pb"  )
+    plot!(-10:40, Pi[end-50:end], label="Pi"  )
+    plot!(-10:40, Pf[end-50:end], label="Pf"  )
+    savefig("figs/P.png")
 
-    plot(-10:40, Mw[end-50:end], label="Mw", yscale=:log10)
-    plot!(-10:40, Mi[end-50:end], label="Mi", yscale=:log10)
-    plot!(-10:40, Mf[end-50:end], label="Mf", yscale=:log10)
-    plot!(-10:40, M[end-50:end], label="M", yscale=:log10)
+    plot(-10:40, Mw[end-50:end], label="Mw"  )
+    plot!(-10:40, Mi[end-50:end], label="Mi"  )
+    plot!(-10:40, Mf[end-50:end], label="Mf"  )
+    plot!(-10:40, M[end-50:end], label="M"  )
     savefig("figs/M.png")
 
     plot(-10:40, ΔMw[end-50:end], label="ΔMw")
@@ -251,9 +254,9 @@ function all_plot()
     plot!(-10:40, ΔM[end-50:end], label="ΔM")
     savefig("figs/ΔM.png")
 
-    plot(-10:40, e[end-50:end], label="e", yscale=:log10)
-    plot!(-10:40, ei[end-50:end], label="ei", yscale=:log10)
-    plot!(-10:40, eb[end-50:end], label="eb", yscale=:log10)
+    plot(-10:40, e[end-50:end], label="e"  )
+    plot!(-10:40, ei[end-50:end], label="ei"  )
+    plot!(-10:40, eb[end-50:end], label="eb"  )
     savefig("figs/small_e.png")
 
     plot(-10:40, Δe[end-50:end], label="Δe")
@@ -262,35 +265,35 @@ function all_plot()
     plot!(-10:40, zeros(51), label=nothing, color="Gray")
     savefig("figs/Δe.png")
 
-    plot(-10:40, pe[end-50:end], label="pe", yscale=:log10)
+    plot(-10:40, pe[end-50:end], label="pe"  )
     savefig("figs/pe.png")
 
-    plot(-10:40, K[end-50:end], label="K", yscale=:log10)
-    plot!(-10:40, Kf[end-50:end], label="Kf", yscale=:log10)
-    plot!(-10:40, Ki[end-50:end], label="Ki", yscale=:log10)
-    plot!(-10:40, Kw[end-50:end], label="Kw", yscale=:log10)
+    plot(-10:40, K[end-50:end], label="K"  )
+    plot!(-10:40, Kf[end-50:end], label="Kf"  )
+    plot!(-10:40, Ki[end-50:end], label="Ki"  )
+    plot!(-10:40, Kw[end-50:end], label="Kw"  )
     savefig("figs/K.png")
 
-    plot(-10:40, L[end-50:end], label="L", yscale=:log10)
-    plot!(-10:40, Lw[end-50:end], label="Lw", yscale=:log10)
-    plot!(-10:40, Lf[end-50:end], label="Lf", yscale=:log10)
+    plot(-10:40, L[end-50:end], label="L"  )
+    plot!(-10:40, Lw[end-50:end], label="Lw"  )
+    plot!(-10:40, Lf[end-50:end], label="Lf"  )
     savefig("figs/L.png")
 
-    plot(-10:40, E[end-50:end], label="E", yscale=:log10)
-    plot!(-10:40, Ei[end-50:end], label="Ei", yscale=:log10)
-    plot!(-10:40, Eb[end-50:end], label="Eb", yscale=:log10)
-    plot!(-10:40, D[end-50:end], label="D", yscale=:log10)
+    plot(-10:40, E[end-50:end], label="E"  )
+    plot!(-10:40, Ei[end-50:end], label="Ei"  )
+    plot!(-10:40, Eb[end-50:end], label="Eb"  )
+    plot!(-10:40, D[end-50:end], label="D"  )
     savefig("figs/E_and_D.png")
 
     plot(-10:40, ΔL[end-50:end], label="ΔL")
     plot!(-10:40, ΔLw[end-50:end], label="ΔLw")
     plot!(-10:40, ΔLf[end-50:end], label="ΔLf")
-    plot!(-10:40, zeros(51), label=nothing)
+    plot!(-10:40, zeros(51), label=nothing, color="Gray")
     savefig("figs/ΔL.png")
 
-    plot(-10:40, H[end-50:end], label="H", yscale=:log10)
-    plot!(-10:40, Hw[end-50:end], label="Hw", yscale=:log10)
-    plot!(-10:40, Hb[end-50:end], label="Hb", yscale=:log10)
+    plot(-10:40, H[end-50:end], label="H"  )
+    plot!(-10:40, Hw[end-50:end], label="Hw"  )
+    plot!(-10:40, Hb[end-50:end], label="Hb"  )
     savefig("figs/H.png")
 
     plot(-10:40, ΔH[end-50:end], label="ΔH")
@@ -299,9 +302,9 @@ function all_plot()
     plot!(-10:40, zeros(51), label=nothing)
     savefig("figs/ΔH.png")
 
-    plot(-10:40, GB[end-50:end], label="GB", yscale=:log10)
-    plot!(-10:40, GBi[end-50:end], label="GBi", yscale=:log10)
-    plot!(-10:40, GBb[end-50:end], label="GBb", yscale=:log10)
+    plot(-10:40, GB[end-50:end], label="GB"  )
+    plot!(-10:40, GBi[end-50:end], label="GBi"  )
+    plot!(-10:40, GBb[end-50:end], label="GBb"  )
     savefig("figs/GB.png")
 
     plot(-10:40, ΔGB[end-50:end], label="ΔGB")
@@ -325,7 +328,6 @@ function all_plot()
     savefig("figs/NL.png")
 
     plot(-10:40, ((H+GB)./(C+Ca+G+Wg+I))[end-50:end], label="(H+GB)/GDP")
-    plot!(-10:40, zeros(51), label=nothing, color="Gray")
     savefig("figs/Gov-Debt-to-GDP ratio.png")
 end
 all_plot()
